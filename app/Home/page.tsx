@@ -1,72 +1,49 @@
-"use client"
+"use client";
+
 import React, { useState } from 'react';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { addItem, removeItem } from '../redux/cartSlice';
+import { selectProducts } from '../redux/productSlice';
+
 import '../APP.css';
-import Image from 'next/image';
+import { AppDispatch } from '../redux/store';
+import { useDispatch } from 'react-redux';
+import Link from 'next/link';
 
 const Home: React.FC = () => {
-  const [cartItems, setCartItems] = useState<{ [key: string]: number }>({}); 
-  const [showCart, setShowCart] = useState(false);
-   
+  const dispatch: AppDispatch = useDispatch();
+  const cartItems = useAppSelector((state) => state.cart.cartItems);
+  const products = useAppSelector(selectProducts);
+  const [showCart, setShowCart] = React.useState(false);
 
-  function handleButtonClick(itemName: string) {
+  const handleToggleCart = () => {
+    setShowCart(!showCart);
+  };
 
-    setCartItems(prevItems => ({
-      ...prevItems,
-      [itemName]: (prevItems[itemName] || 0) + 1 
-    }));
-  }
+  const handleButtonClick = (productName: string) => {
+    const product = products.find((p) => p.name === productName);
+    if (product) {
+    
+      dispatch(addItem({ itemName: productName, imagePath: product.image, price: product.price }));
+    }
+  };
 
-  function handleRemoveButtonClick(itemName: string) {
-    setCartItems(prevItems => {
-      const newItems = { ...prevItems };
-      delete newItems[itemName]; 
-      return newItems;
-    });
-  }
-
-  function toggleCart() {
-    setShowCart(prevShowCart => !prevShowCart); 
-  }
-
+ 
+// where my outline start conatins the outer part of the code and the add to cart button
   return (
-    <div className=".container">
+    <div className="container">
       <header className="header">
-        <h1>Welcome to foodstore</h1>
+        <h1>Welcome to Foodstore</h1>
         <div className="Cart">
-          <button onClick={toggleCart}>
-            <img src="cart.png" alt="cart" />({Object.values(cartItems).reduce((a, b) => a + b, 0)})
-          </button>
+          
+          <Link href="/cart">
+            <button onClick={handleToggleCart}>
+              <img src="cart.png" alt="cart" />
+              {Object.keys(cartItems).length}
+            </button>
+          </Link>
         </div>
       </header>
-
-      {showCart && (
-        <div className="cartItems">
-          <h2>Items in Cart:</h2>
-          <ul>
-            {Object.keys(cartItems).map(item => {
-                let price = 0;
-                if (item === 'Apple') price = 50;
-                else if (item === 'Avocado') price = 30; 
-                else if (item === 'Burger') price = 80; 
-                else if (item === 'Hotdog') price = 100; 
-                else if (item === 'Melon') price = 120;
-                else if (item === 'Pizza') price = 800;
-                else if (item === 'Salad') price = 50; 
-  
-              const total = price * cartItems[item];
-              return (
-                <li key={item}>
-                  {item} = {cartItems[item]} = sh{total}
-                  <div className="dels">
-                  <button onClick={() => handleRemoveButtonClick(item)}><img src="del.png" alt="del"></img></button>
-                  </div>
-                  </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
       <div className="banner">
         <div className="customShape">
           <h2>Fresh Produce</h2>
@@ -75,58 +52,18 @@ const Home: React.FC = () => {
 
       <main className="mainContent">
         <h2>Shop Our Products</h2>
-        <p>Explore a wide range of fresh fruits, vegetables, and Snacks.</p>
-
+        <p>Explore a wide range of fresh fruits, vegetables, and snacks.</p>
+     
         <div className="productContainer">
-          <div className="product">
-            <img src="Apple.jpg" alt="Apple" />
-            <p className="text">Apple  - sh50</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Apple')}>Take Item</button>
+          {products.map((product) => (
+            <div className="product" key={product.id}>
+              <img src={product.image} alt={product.name} />
+              <p className="text">{product.name} - sh{product.price}</p>
+              <div className="buttontake">
+                <button onClick={() => handleButtonClick(product.name)}>Take Item</button>
+              </div>
             </div>
-          </div>
-          <div className="product">
-            <img src="Avacado.jpg" alt="Avocado" />
-            <p className="text">Avocado - sh30  </p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Avocado')}>Take Item</button>
-            </div>
-          </div>
-          <div className="product">
-            <img src="burger.jpg" alt="Burger" />
-            <p className="text">Burger - sh 80</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Burger')}>Take Item</button>
-            </div>
-          </div>
-          <div className="product">
-            <img src="hotdog.jpg" alt="Hotdog" />
-            <p className="text">Hotdog - sh 100</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Hotdog')}>Take Item</button>
-            </div>
-          </div>
-          <div className="product">
-            <img src="melon.jpg" alt="Melon" />
-            <p className="text">Melon - sh 120</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Melon')}>Take Item</button>
-            </div>
-          </div>
-          <div className="product">
-            <img src="pizaa.jpg" alt="Pizza" />
-            <p className="text">Pizza - sh 800</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Pizza')}>Take Item</button>
-            </div>
-          </div>
-          <div className="product">
-            <img src="salad.jpg" alt="Salad" />
-            <p className="text">Salad - sh 50</p>
-            <div className="buttontake">
-              <button onClick={() => handleButtonClick('Salad')}>Take Item</button>
-            </div>
-          </div>
+          ))}
         </div>
       </main>
 
@@ -136,11 +73,5 @@ const Home: React.FC = () => {
     </div>
   );
 };
-  
-     
-      
-    
-  
-
 
 export default Home;
